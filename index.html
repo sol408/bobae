@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로포즈 퀴즈</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #fff8dc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            background: #fffacd;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .content {
+            width: 50%;
+            text-align: left;
+            padding: 20px;
+        }
+        .content2 {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+        .image {
+            width: 50%;
+        }
+        .image img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .option {
+            display: block;
+            background: #ffdb58;
+            color: black;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+            text-align: center;
+            border: none;
+            width: 100%;
+        }
+        .option:hover {
+            background: #ffc107;
+            transform: scale(1.05);
+        }
+        .option:active {
+            transform: scale(0.95);
+        }
+        .hidden {
+            display: none;
+        }
+        #question-counter {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff8c00;
+        }
+        #start-btn {
+            background: #ffdb58;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        #next-btn {
+            background: #ffdb58;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        #intro-text {
+            font-size: 20px;
+            color: #ff8c00; /* 주황색 포인트 */
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bg-music" loop>
+        <source src="music/background.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clap-sound">
+        <source src="music/clap.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 첫 페이지 -->
+    <div class="container" id="start-screen">
+        <div class="content2">
+            <h1>💛 Love Quiz 💛</h1>
+            <p id="intro-text">보배와 한솔이의 사랑을 추억하는 퀴즈! <br>모든 문제를 맞히고 상품을 받아가세요! 💖</p>
+            <button id="start-btn" class="option" onclick="startQuiz()">퀴즈 시작</button>
+        </div>
+    </div>
+
+    <!-- 퀴즈 페이지 -->
+    <div class="container hidden" id="quiz-screen">
+        <div class="content" id="quiz-content">
+            <div id="question-counter"></div>
+            <h2 id="question-text"></h2>
+            <div id="options"></div>
+            <button id="next-btn" class="hidden" onclick="nextQuestion()">다음 문제</button>
+        </div>
+        <div class="image">
+            <img id="question-image" src="" alt="Quiz Image">
+        </div>
+    </div>
+
+    <!-- 사이 문구 페이지 -->
+    <div class="container hidden" id="transition-screen">
+        <div class="image">
+            <img id="transition-image" src="" alt="Transition Image">
+        </div>
+        <div class="content">
+            <h2 id="transition-text"></h2>
+            <p id="transition-note" class="note-text"></p>
+            <button id="next-btn" class="option" onclick="nextQuestion()">다음 문제로 이동</button>
+        </div>
+        
+    </div>
+
+    <!-- 마지막 페이지 -->
+    <div class="container hidden" id="final-screen">
+        <div class="content">
+            <h2>🎉 축하해! 🎉</h2>
+            <p>모든 문제를 맞췄어! 역시 우리는 운명인가봐!<br> 그래서 말인데...💍</p>
+        </div>
+        <div class="image">
+            <img src="images/propose.jpg" alt="Proposal">
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        const questions = [
+            { text: "우리가 처음 만난 장소는 어디였을까?", 
+              imgs: ["images/q1/q1-1.jpg", "images/q1/q1-2.jpg", "images/q1/q1-3.jpg"], 
+              options: ["카페", "영화관", "공원"], answer: [0] },
+            { text: "우리가 처음 같이 본 영화는?", 
+              imgs: ["images/q2/q2-1.jpg", "images/q2/q2-2.jpg", "images/q2/q2-3.jpg"], 
+              options: ["겨울왕국", "마약왕", "보헤미안 랩소디"], answer: [1] },
+            { text: "사진 속 우리가 데이트 했던 장소는 어디였을까?", 
+              imgs: ["images/q3/q3-1.jpg", "images/q3/q3-2.jpg", "images/q3/q3-3.jpg"], 
+              options: ["에버랜드", "롯데월드", "경주월드"], answer: [1] },
+            { text: "우리 첫 여행지는 어디였을까?", 
+              imgs: ["images/q4/q4-1.jpg", "images/q4/q4-2.jpg"], 
+              options: ["일본", "홍콩", "런던"], answer: [0] },
+            { text: "우리가 장거리 연애를 한 지역이 아닌 것은?", 
+              imgs: ["images/q5/q5-1.jpg", "images/q5/q5-2.jpg", "images/q5/q5-3.jpg", "images/q5/q5-4.jpg", "images/q5/q5-5.jpg"], 
+              options: ["광주-이천", "포항-광주", "수원-서울"], answer: [2] },
+            { text: "우리가 같이 극복한 가장 힘들었던 일은?", 
+              imgs: ["images/q6/q6-1.jpg", "images/q6/q6-2.jpg", "images/q6/q6-3.jpg", "images/q6/q6-4.jpg", "images/q6/q6-5.jpg"], 
+              options: ["임용고시 준비", "대학원 생활", "이사"], answer: [1] },
+            { text: "우리가 연애한지 몇 년차 일까?", 
+              imgs: ["images/q7/q7-1.jpg", "images/q7/q7-2.jpg", "images/q7/q7-3.jpg", "images/q7/q7-4.jpg", "images/q7/q7-5.jpg"], 
+              options: ["6년차", "7년차", "8년차"], answer: [1] },
+            { text: "앞으로도 우리 함께 힘든 일 함께 극복하고 기쁜 일 함께 즐길 수 있을까?", 
+              imgs: ["images/q8/q8-1.jpg", "images/q8/q8-2.jpg", "images/q8/q8-3.jpg", "images/q8/q8-4.jpg", "images/q8/q8-5.jpg", "images/q8/q8-6.jpg", "images/q8/q8-7.jpg", "images/q8/q8-8.jpg", "images/q8/q8-9.jpg"], 
+              options: ["당연하지!", "글쎄...", "생각이 필요해"], answer: [0] }
+        ];
+        const transitions = [
+            { text: "첫만남...", 
+              imgs: ["images/t1/t1-1.jpg", "images/t1/t1-2.jpg", "images/t1/t1-3.jpg"], 
+              note: "우리 처음 만난 날 기억나?\n 임용고시 2차 스터디 한다고 노량진 카페에서 만났었잖아.\n 가끔 얘기하지만 그때 너의 스트라이프 티와 내 떡볶이 코트가 기억에 남아.\n 지금 생각해보면 그렇게 만난 것도 진짜 운명이었던 것 같아." },
+            { text: "그렇게 스터디를 하던 중...", 
+              imgs: ["images/t2/t2-1.jpg", "images/t2/t2-2.jpg", "images/t2/t2-3.jpg"], 
+              note: "스터디도 열심히 하고 끝난 뒤에는 열심히 놀기도 했던 우리.\n 그러다 나는 점점 너한테 관심이 생기기 시작했고 둘이 따로 스터디를 하자고 했었지!\n 그 때는 어떻게 그런 용기가 났었는지... 그만큼 너가 마음에 들었단 뜻이었겠지?" },
+            { text: "연애 시작!", 
+              imgs: ["images/t3/t3-1.jpg", "images/t3/t3-2.jpg", "images/t3/t3-3.jpg", "images/t3/t3-4.jpg", "images/t3/t3-5.jpg", "images/t3/t3-6.jpg", "images/t3/t3-7.jpg"], 
+              note: "그렇게 연애를 시작한 우리였지만 처음엔 쉽지 않았지...\n 그래도 나를 포기하지 않고 계속 만나줘서 얼마나 고마웠는지 몰라.\n 그래서 였는지 우리는 그 누구보다 더 애틋하고 귀여운 커플이었던 것 같아." },
+            { text: "해외여행", 
+              imgs: ["images/t4/t4-1.jpg", "images/t4/t4-2.jpg", "images/t4/t4-3.jpg", "images/t4/t4-4.jpg", "images/t4/t4-5.jpg", "images/t4/t4-6.jpg", "images/t4/t4-7.jpg"], 
+              note: "연애 초반에 일본 같이 다녀온 것도 너무 좋았던 것 같아.\n 그 때 당시에 자주 보긴 했지만 그렇게 며칠을 같이 보내고 나니까 서로에 대해 더 깊게 알게 된 것 같기도 하고 더 좋아하게 된 것 같기도 해.\n 그리고 그 때 이천으로 발령이 났었지.\n 그렇게 우린 장거리 연애를 시작하게 되었고..." },
+            { text: "장거리 연애", 
+              imgs: ["images/t5/t5-1.jpg", "images/t5/t5-2.jpg", "images/t5/t5-3.jpg", "images/t5/t5-4.jpg", "images/t5/t5-5.jpg", "images/t5/t5-6.jpg"], 
+              note: "서로 떨어져 있었지만 그래서 그 누구보다 더 많은 시간을 보내려고 노력했던 우리였지.\n 퇴근하고 오면 영상통화 하면서 각자 할일 하기도 하고 같이 넷플릭스나 영상 틀어놓고 싱크 맞춰서 보겠다고 했던 것도 생각나네.\n 그러면서도 항상 더 발전하려고 노력하고 준비하는 데에 마음이 맞았던 우리는 지금까지 인생에서 가장 힘든 시기를 보내러 가게 되었지..." },
+            { text: "대학원", 
+              imgs: ["images/t6/t6-1.jpg", "images/t6/t6-2.jpg", "images/t6/t6-3.jpg", "images/t6/t6-4.jpg", "images/t6/t6-5.jpg", "images/t6/t6-6.jpg"], 
+              note: "한 단계 성장하기 위한 과정이었지만 그만큼 정말 힘든 시간이었던 것 같아.\n 그래도 혼자가 아니라 같이여서 극복할 수 있었던 것 같아.\n 그리고 이 때 옹이를 만나서 버틸 수 있었어.\n 진짜 이 때는 힘들었던 일이랑 좋았던 일이 극과 극으로 있던 시기였던 것 같아." },
+            { text: "7년", 
+              imgs: ["images/t7/t7-1.jpg", "images/t7/t7-2.jpg", "images/t7/t7-3.jpg", "images/t7/t7-4.jpg", "images/t7/t7-5.jpg", "images/t7/t7-6.jpg", "images/t7/t7-7.jpg", "images/t7/t7-8.jpg", "images/t7/t7-9.jpg", "images/t7/t7-10.jpg"], 
+              note: "7년이라는 시간동안 함께하면서 서로의 취미가 우리의 취미가 되고, 새로운 취미도 찾고, 여러 일들도 함께 하면서 정말 많이 행복했던 것 같아.\n 앞으로 너가 힘들 때 내가 더 힘이 되주고 항상 옆에 있어주고 싶어.\n 내가 비록 표현을 잘 못하지만 항상 사랑하고 있고 앞으로도 사랑하고 싶어." },
+        ];
+
+        function startQuiz() {
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("bg-music").play();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showFinalScreen();
+                return;
+            }
+            const q = questions[currentQuestionIndex];
+            document.getElementById("question-counter").innerText = `${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById("question-text").innerText = q.text;
+            let imgIndex = 0;
+            const questionImage = document.getElementById("question-image");
+    
+            function changeImage() {
+                questionImage.src = q.imgs[imgIndex];
+                imgIndex = (imgIndex + 1) % q.imgs.length; // 다음 이미지로 변경 (무한 루프)
+            }
+
+            changeImage(); // 첫 번째 이미지 설정
+            clearInterval(window.imageInterval); // 기존 인터벌 제거 (중복 방지)
+            window.imageInterval = setInterval(changeImage, 1500); // 2초마다 이미지 변경
+        
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement("button");
+                btn.classList.add("option");
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if (q.answer.includes(index)) {
+                        goToTransitionScreen(); // 정답 맞추면 바로 사이 문구 페이지로 이동
+                    } else {
+                        alert("틀렸어요! 다시 선택해 주세요.");
+                    }
+                };
+                optionsDiv.appendChild(btn);
+            });
+        }
+        
+        function goToTransitionScreen() {
+            if (currentQuestionIndex === questions.length - 1) {
+                showFinalScreen();
+                return;
+            }
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("transition-screen").classList.remove("hidden");
+            const transition = transitions[currentQuestionIndex];
+            document.getElementById("transition-text").innerText = transition.text;
+            document.getElementById("transition-note").innerText = transition.note;
+            document.getElementById("transition-note").innerHTML = transition.note.replace(/\n/g, "<br>");
+
+
+            let imgIndex = 0;
+            const transitionImage = document.getElementById("transition-image");
+
+            function changeImage() {
+                transitionImage.src = transition.imgs[imgIndex];
+                imgIndex = (imgIndex + 1) % transition.imgs.length; // 다음 이미지로 변경 (무한 루프)
+            }
+
+            changeImage(); // 첫 번째 이미지 설정
+            clearInterval(window.imageInterval); // 기존 인터벌 제거 (중복 방지)
+            window.imageInterval = setInterval(changeImage, 1500); // 2초마다 이미지 변경
+        }
+        
+        function nextQuestion() {
+            document.getElementById("transition-screen").classList.add("hidden");
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById("quiz-screen").classList.remove("hidden");
+                loadQuestion();
+            } else {
+                showFinalScreen();
+            }
+        }
+
+
+        function showFinalScreen() {
+            document.getElementById("transition-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("bg-music").pause();
+            document.getElementById("clap-sound").play();
+            document.getElementById("final-screen").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
